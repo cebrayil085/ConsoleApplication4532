@@ -13,14 +13,19 @@ struct Question {
     int correctAnswer;
 };
 
-Question** quizzes; // Dynamic array of pointers to questions
+struct Quiz {
+    Question* questions; // Pointer to questions
+    int questionCount;   // Number of questions
+};
+
+Quiz* quizzes; // Dynamic array of quizzes
 int quizCount = 0;
 int quizCapacity = 0;
 
 void addQuiz() {
     if (quizCount >= quizCapacity) {
         quizCapacity = (quizCapacity == 0) ? 1 : quizCapacity * 2; // Double the capacity
-        Question** newQuizzes = new Question * [quizCapacity];
+        Quiz* newQuizzes = new Quiz[quizCapacity];
         for (int i = 0; i < quizCount; ++i) {
             newQuizzes[i] = quizzes[i]; // Copy existing quizzes
         }
@@ -32,20 +37,21 @@ void addQuiz() {
     int questionCount;
     cin >> questionCount;
 
-    quizzes[quizCount] = new Question[questionCount]; // Allocate memory for questions
+    quizzes[quizCount].questions = new Question[questionCount]; // Allocate memory for questions
+    quizzes[quizCount].questionCount = questionCount; // Store number of questions
 
     for (int i = 0; i < questionCount; ++i) {
         cout << "Enter question " << (i + 1) << ": ";
         cin.ignore();
-        getline(cin, quizzes[quizCount][i].text);
+        getline(cin, quizzes[quizCount].questions[i].text);
 
         for (int j = 0; j < MAX_OPTIONS; ++j) {
             cout << "Enter option " << (j + 1) << ": ";
-            getline(cin, quizzes[quizCount][i].options[j]);
+            getline(cin, quizzes[quizCount].questions[i].options[j]);
         }
 
         cout << "Enter correct answer (1-4): ";
-        cin >> quizzes[quizCount][i].correctAnswer;
+        cin >> quizzes[quizCount].questions[i].correctAnswer;
     }
 
     quizCount++;
@@ -68,19 +74,19 @@ void takeQuiz() {
     }
 
     int correctCount = 0;
-    int questionCount = sizeof(quizzes[choice - 1]) / sizeof(Question);
+    int questionCount = quizzes[choice - 1].questionCount; // Use the stored question count
 
     for (int i = 0; i < questionCount; ++i) {
-        cout << "Question: " << quizzes[choice - 1][i].text << endl;
+        cout << "Question: " << quizzes[choice - 1].questions[i].text << endl;
         for (int j = 0; j < MAX_OPTIONS; ++j) {
-            cout << (j + 1) << ". " << quizzes[choice - 1][i].options[j] << endl;
+            cout << (j + 1) << ". " << quizzes[choice - 1].questions[i].options[j] << endl;
         }
 
         int answer;
         cout << "Your answer (1-4): ";
         cin >> answer;
 
-        if (answer == quizzes[choice - 1][i].correctAnswer) {
+        if (answer == quizzes[choice - 1].questions[i].correctAnswer) {
             correctCount++;
         }
     }
@@ -90,7 +96,7 @@ void takeQuiz() {
 
 void cleanUp() {
     for (int i = 0; i < quizCount; ++i) {
-        delete[] quizzes[i]; // Free each quiz's questions
+        delete[] quizzes[i].questions; // Free each quiz's questions
     }
     delete[] quizzes; // Free the quizzes array
 }
